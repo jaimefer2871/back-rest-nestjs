@@ -1,26 +1,24 @@
-import { Injectable } from '@nestjs/common';
-import { CreateWalletDto } from './dto/create-wallet.dto';
-import { UpdateWalletDto } from './dto/update-wallet.dto';
+import { Inject, Injectable } from '@nestjs/common';
+import { CheckBalanceWalletDto } from './dto/checkBalance-wallet.dto';
+import { ReloadWalletDto } from './dto/reload-wallet.dto';
+import { Client } from 'nestjs-soap';
 
 @Injectable()
 export class WalletsService {
-  create(createWalletDto: CreateWalletDto) {
-    return 'This action adds a new wallet';
+
+  constructor(
+    @Inject('WalletServiceSoap') private readonly walletServiceSoap: Client,
+  ) { }
+
+  async getFunds(checkBalanceWalletDto: CheckBalanceWalletDto) {
+
+    let { document, phone } = { ...checkBalanceWalletDto }
+    return await this.walletServiceSoap.getFundsAsync({ document, phone });
   }
 
-  findAll() {
-    return `This action returns all wallets`;
+  async reload(realodWalletDto: ReloadWalletDto) {
+    let { document, phone, amount } = { ...realodWalletDto }
+    return await this.walletServiceSoap.reloadAsync({ document, phone, amount });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} wallet`;
-  }
-
-  update(id: number, updateWalletDto: UpdateWalletDto) {
-    return `This action updates a #${id} wallet`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} wallet`;
-  }
 }

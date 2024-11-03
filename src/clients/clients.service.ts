@@ -2,7 +2,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CreateClientDto } from './dto/create-client.dto';
 
 import { Client } from 'nestjs-soap';
-import { error } from 'console';
 
 @Injectable()
 export class ClientsService {

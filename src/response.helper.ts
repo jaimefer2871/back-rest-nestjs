@@ -7,7 +7,6 @@ export class ResponseHelper {
         let output = {};
         let response = res[0].return;
 
-        console.log('eee',response);
         if (response.success.$value == 'true') {
             output = this.processSuccess(response);
         } else {
