@@ -1,42 +1,72 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Post, Body, Req, Res, HttpStatus } from '@nestjs/common';
+import { Request, Response } from 'express';
 import { PaymentsService } from './payments.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
-import { UpdatePaymentDto } from './dto/update-payment.dto';
+import { ConfirmPaymentDto } from './dto/confirm-payment.dto';
+import { ResponseHelper } from 'src/response.helper';
 
 @Controller('api/v1/payments')
 export class PaymentsController {
-  constructor(private readonly paymentsService: PaymentsService) {}
+  constructor(private readonly paymentsService: PaymentsService, private readonly responseHelper: ResponseHelper) { }
 
-  @Post()
-  create(@Body() createPaymentDto: CreatePaymentDto) {
-    return this.paymentsService.create(createPaymentDto);
+  @Post('pay')
+  async pay(@Body() createPaymentDto: CreatePaymentDto,
+    @Req() request: Request,
+    @Res() response: Response,
+  ) {
+    let jsonResponse: any = {};
+
+    try {
+      const result = await this.paymentsService.pay(createPaymentDto);
+
+      if (result !== null && result !== undefined) {
+        jsonResponse = this.responseHelper.process(result);
+      } else {
+        jsonResponse['error'] = true;
+        jsonResponse['code'] = HttpStatus.INTERNAL_SERVER_ERROR;
+        jsonResponse['message'] = 'Error to invoke function soap';
+      }
+    } catch (error) {
+      jsonResponse['error'] = true;
+      jsonResponse['code'] = HttpStatus.INTERNAL_SERVER_ERROR;
+      jsonResponse['message'] = error.hasOwnProperty('message')
+        ? error.message
+        : 'Ha ocurrido un error interno';
+      jsonResponse['error_details'] = {};
+      jsonResponse['data'] = {};
+    }
+
+    return response.status(jsonResponse.code).json(jsonResponse);
   }
 
-  @Get()
-  findAll() {
-    return this.paymentsService.findAll();
+  @Post('confirm')
+  async confirm(@Body() confirmPaymentDto: ConfirmPaymentDto,
+    @Req() request: Request,
+    @Res() response: Response,) {
+
+    let jsonResponse: any = {};
+
+    try {
+      const result = await this.paymentsService.confirm(confirmPaymentDto);
+
+      if (result !== null && result !== undefined) {
+        jsonResponse = this.responseHelper.process(result);
+      } else {
+        jsonResponse['error'] = true;
+        jsonResponse['code'] = HttpStatus.INTERNAL_SERVER_ERROR;
+        jsonResponse['message'] = 'Error to invoke function soap';
+      }
+    } catch (error) {
+      jsonResponse['error'] = true;
+      jsonResponse['code'] = HttpStatus.INTERNAL_SERVER_ERROR;
+      jsonResponse['message'] = error.hasOwnProperty('message')
+        ? error.message
+        : 'Ha ocurrido un error interno';
+      jsonResponse['error_details'] = {};
+      jsonResponse['data'] = {};
+    }
+
+    return response.status(jsonResponse.code).json(jsonResponse);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.paymentsService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePaymentDto: UpdatePaymentDto) {
-    return this.paymentsService.update(+id, updatePaymentDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.paymentsService.remove(+id);
-  }
 }
